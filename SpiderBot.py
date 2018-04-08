@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 import logging
 import asyncio
+import sys
 
 
 # Set up logger
@@ -20,32 +21,49 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
+# Grab token from arguments
+
+
+if len(sys.argv) == 2:
+    token = sys.argv[1]
+elif len(sys.argv) > 2:
+    print("Too many arguments passed")
+    sys.exit(0)
+else:
+    print("Token not provided")
+    sys.exit(0)
+
+
 # Main code
 
 
-token = 'INSERT_BOT_TOKEN_HERE'
+bot = discord.Client()
 
-client = discord.Client()
-
-@client.event
-async def on_ready():
+@bot.event
+async def on_connect():
     print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
+    print(bot.user.name)
+    print(bot.user.id)
     print('------')
 
-@client.event
+@bot.event
+async def on_ready():
+    print("Bot ready")
+    print('------')
+
+@bot.event
 async def on_message(message):
     if message.content.startswith('!test'):
         counter = 0
-        tmp = await client.send_message(message.channel, 'Calculating messages...')
-        async for log in client.logs_from(message.channel, limit=100):
+        tmp = await message.channel.send('Calculating messages...')
+        async for log in message.channel.history(limit=100):
             if log.author == message.author:
                 counter += 1
 
-        await client.edit_message(tmp, 'You have {} messages.'.format(counter))
+        await tmp.edit(content='You have {} messages.'.format(counter))
     elif message.content.startswith('!sleep'):
         await asyncio.sleep(5)
-        await client.send_message(message.channel, 'Done sleeping')
+        await message.channel.send('Done sleeping')
 
-client.run(token)
+if __name__ == "__main__":
+    bot.run(token)
