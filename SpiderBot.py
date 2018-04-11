@@ -1,69 +1,84 @@
 #!/usr/bin/env python3
 
 ''' SpiderBot.py
-    A bot for Discord that interfaces with the TorSpider service.
+    A Discord Interface for TorSpider
 '''
 
-import discord
-from discord.ext import commands
-import logging
-import asyncio
+import os
 import sys
+import discord
+import configparser
+from app.logging import logger
+from discord.ext import commands
 
 
-# Set up logger
+#---[ INITIALIZATION ]---#
 
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
+bot = discord.Client(fetch_offline_members=True)
 
 
-# Grab token from arguments
+#---[ FUNCTIONS ]---#
 
-
-if len(sys.argv) == 2:
-    token = sys.argv[1]
-elif len(sys.argv) > 2:
-    print("Too many arguments passed")
-    sys.exit(0)
-else:
-    print("Token not provided")
-    sys.exit(0)
-
-
-# Main code
-
-
-bot = discord.Client()
 
 @bot.event
 async def on_connect():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('------')
+    logger.log('Logged in as {} ({}).'.format(
+            bot.user.name, bot.user.id), 'INFO')
+
 
 @bot.event
 async def on_ready():
-    print("Bot ready")
-    print('------')
+    logger.log("Bot ready", 'INFO')
 
-@bot.event
-async def on_message(message):
-    if message.content.startswith('!test'):
-        counter = 0
-        tmp = await message.channel.send('Calculating messages...')
-        async for log in message.channel.history(limit=100):
-            if log.author == message.author:
-                counter += 1
 
-        await tmp.edit(content='You have {} messages.'.format(counter))
-    elif message.content.startswith('!sleep'):
-        await asyncio.sleep(5)
-        await message.channel.send('Done sleeping')
+def main():
+    if not os.path.exists('bot.cfg'):
+        default_config = configparser.RawConfigParser()
+        default_config.optionxform = lambda option: option
+        default_config['SpiderBot'] = {
+            'Token': 'BOT_TOKEN_GOES_HERE',
+        }
+        default_config['LOGGING'] = {
+            'LogToConsole': 'True',
+            'loglevel': 'INFO'
+        }
+        with open('bot.cfg', 'w') as config_file:
+            default_config.write(config_file)
+        print('Default configuration stored in bot.cfg.')
+        print('Please edit bot.cfg before running SpiderBot again.')
+        sys.exit(0)
 
-if __name__ == "__main__":
-    bot.run(token)
+    logger.log('Initializing...', 'INFO')
+
+    # Load the configuration file.
+    try:
+        config = configparser.ConfigParser()
+        config.read('bot.cfg')
+        bot_token = config['SpiderBot'].get('Token')
+    except Exception as e:
+        print('Could not parse bot.cfg. Please verify its syntax.')
+        sys.exit(0)
+
+    # Config loaded. Start the bot.
+    logger.log('SpiderBot Initialized. Connecting to Discord...', 'INFO')
+    try:
+        bot.run(bot_token)
+    except discord.LoginFailure:
+        logger.log('Exception: Login Failure. Check bot token in bot.cfg.',
+                   'CRITICAL')
+        sys.exit(0)
+    except Exception as e:
+        logger.log('Exception: {}'.format(e), 'CRITICAL')
+        raise
+        sys.exit(0)
+
+    # When we reach this point, the bot has shut down.
+    logger.log('SpiderBot disconnected.', 'INFO')
+
+
+#---[ MAIN ]---#
+
+
+if __name__ == '__main__':
+    main()
