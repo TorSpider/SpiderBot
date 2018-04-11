@@ -8,28 +8,17 @@ import os
 import sys
 import discord
 import configparser
+from app.bot import SpiderBot
 from app.logging import logger
-from discord.ext import commands
 
 
 #---[ INITIALIZATION ]---#
 
 
-bot = discord.Client(fetch_offline_members=True)
+bot = SpiderBot()
 
 
 #---[ FUNCTIONS ]---#
-
-
-@bot.event
-async def on_connect():
-    logger.log('Logged in as {} ({}).'.format(
-            bot.user.name, bot.user.id), 'INFO')
-
-
-@bot.event
-async def on_ready():
-    logger.log("Bot ready", 'INFO')
 
 
 def main():

@@ -45,7 +45,6 @@ class Logger:
 
 
     def log(self, message, level):
-        message = ' '.join(message.split())  # Remove unnecessary whitespace.
         if level.lower() == 'debug':
             self.logger.debug(message)
         elif level.lower() == 'info':
