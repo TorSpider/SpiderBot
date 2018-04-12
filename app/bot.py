@@ -50,11 +50,19 @@ class SpiderBot(discord.Client):
                         embed=information
                 )
 
-            if text.startswith('$boturl'):
+            elif text.startswith('$boturl'):
                 # They asked for the URL of the bot, to add it to their server.
                 await message.channel.send(
                         content=open('app/text/boturl.md','r').read()
                 )
+
+            elif '.onion' in text and '.onion.' not in text:
+                # They've mentioned a .onion address.
+                await message.channel.send(
+                        content=open('app/text/checkonion.md','r').read()
+                )
+                # This is where we'd get in touch with the API and see what
+                # we know about the provided url.
 
         else:
             logger.log('Received a message from myself.', 'DEBUG')

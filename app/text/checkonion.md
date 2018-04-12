@@ -1,0 +1,3 @@
+I see you've shared an .onion address! Let me see what I know about that...
+
+(At this time, this functionality doesn't exist yet. Soon...)
