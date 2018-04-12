@@ -56,8 +56,14 @@ class SpiderBot(discord.Client):
                         content=open('app/text/boturl.md','r').read()
                 )
 
-            elif '.onion' in text and '.onion.' not in text:
+            elif '.onion' in text \
+                 and 'http' in text \
+                 and '.onion.' not in text:
                 # They've mentioned a .onion address.
+                # TODO: Update this to be more picky about what it considers
+                # an .onion address. Also, don't automatically reply to every
+                # single .onion address posted. Only reply when adding a new
+                # .onion to the backend or when replying with known data.
                 await message.channel.send(
                         content=open('app/text/checkonion.md','r').read()
                 )
