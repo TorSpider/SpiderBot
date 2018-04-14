@@ -58,9 +58,7 @@ def main():
                    'CRITICAL')
         sys.exit(0)
     except Exception as e:
-        logger.log('Exception: {}'.format(e), 'CRITICAL')
         raise
-        sys.exit(0)
 
     # When we reach this point, the bot has shut down.
     logger.log('SpiderBot disconnected.', 'INFO')
